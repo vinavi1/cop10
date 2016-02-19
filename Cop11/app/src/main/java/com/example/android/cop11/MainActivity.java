@@ -15,6 +15,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -22,9 +23,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     Button button;
     TextView board;
-    TextView userid;
-    TextView pass;
+    TextView board2;
+    Button button2;
+
     RequestQueue requestQueue;
+    RequestQueue requestQueue2;
+    String data;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,11 +36,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_main);
 
         button = (Button) findViewById(R.id.button);
+        button2 = (Button) findViewById(R.id.button2);
         board = (TextView) findViewById(R.id.board);
-        userid = (TextView) findViewById(R.id.login);
-        pass = (TextView) findViewById(R.id.password);
+        board2 = (TextView) findViewById(R.id.board2);
         requestQueue = Volley.newRequestQueue(this);
+        requestQueue2 = Volley.newRequestQueue(this);
         button.setOnClickListener(this);
+        button2.setOnClickListener(this);
     }
 
 
@@ -44,33 +50,56 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.button:
-                board.setText(""+"22current_sem");
-                JsonObjectRequest jsonObjectRequest;
-                jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, "http://10.205.156.218:8000/courses/list.json",null ,
+
+                JsonObjectRequest jor = new JsonObjectRequest(Request.Method.GET,"http://192.168.24.1:8000/default/login.json?userid=vinay&password=vinay", null,
                         new Response.Listener<JSONObject>() {
-
                             @Override
-                            public void onResponse(JSONObject jsonObject) {
+                            public void onResponse(JSONObject response) {
+
                                 try {
-                                    int current_sem = jsonObject.getInt("\"current_sem\"");
-                                    board.setText(""+current_sem);
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
-                                }
 
+                                    boolean jo = response.getBoolean("success");
+
+                                    board.setText(""+jo);
+                                }catch(JSONException e){e.printStackTrace();}
                             }
-
                         },
                         new Response.ErrorListener() {
                             @Override
                             public void onErrorResponse(VolleyError error) {
-                                Log.e("volley", "error");
+                                Log.e("Volley","Error");
+
                             }
                         }
                 );
-                requestQueue.add(jsonObjectRequest);
+                requestQueue.add(jor);
                 break;
 
+            case R.id.button2:
+                board2.setText(""+"yuuuuu");
+                JsonObjectRequest JsonObjectRequest  = new JsonObjectRequest(Request.Method.GET,"http://192.168.24.1:8000/default/logout.json", null,
+                        new Response.Listener<JSONObject>() {
+                            @Override
+                            public void onResponse(JSONObject response) {
+
+                                try {
+
+                                    int y = response.getInt("noti_count");
+
+                                    board2.setText(""+y);
+                                }catch(JSONException e){e.printStackTrace();}
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.e("Volley","Error");
+
+                            }
+                        }
+                );
+                requestQueue.add(JsonObjectRequest);
+                break;
         }
     }
 }
