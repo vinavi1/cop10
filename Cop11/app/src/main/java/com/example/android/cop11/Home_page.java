@@ -38,8 +38,6 @@ public class Home_page extends AppCompatActivity implements View.OnClickListener
     String url;
     Vector<String> courseslist;
     public static final String MyPREFERENCES = "MyPrefs" ;
-    public static final String Name = "nameKey";
-    public static final String Phone = "phoneKey";
     SharedPreferences sharedPreferences;
 
     RequestQueue queue;
@@ -121,7 +119,7 @@ public class Home_page extends AppCompatActivity implements View.OnClickListener
                             JSONObject noticount= new JSONObject(s);
                             if(noticount.getInt("noti_count")==4){
                                 SharedPreferences.Editor editor= sharedPreferences.edit();
-                                editor.putBoolean("logged",false);
+                                editor.clear();
                                 editor.commit();
                                 Intent intent= new Intent(instance1,MainActivity.class);
                                 startActivity(intent);

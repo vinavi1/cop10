@@ -7,6 +7,8 @@ import android.content.SharedPreferences;
 import android.os.Parcelable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -30,16 +32,15 @@ import javax.xml.transform.TransformerException;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
-    Button button;
+    Button login;
     TextView board;
-    TextView board2;
-    Button button2;
-    EditText name;
-    EditText pass;
+    EditText nameid;
+    EditText passid;
     String url;
+    String u_entered;
+    String p_entered;
     public static final String MyPREFERENCES = "MyPrefs" ;
-    public static final String Name = "nameKey";
-    public static final String Phone = "phoneKey";
+
     SharedPreferences sharedPreferences;
     MainActivity instance;
 
@@ -49,31 +50,67 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        instance=this;
+        instance = this;
 
-        name= (EditText) findViewById(R.id.name);
-        pass = (EditText) findViewById(R.id.pass);
-        button = (Button) findViewById(R.id.button);
-        button2 = (Button) findViewById(R.id.button2);
+        nameid = (EditText) findViewById(R.id.name);
+        passid = (EditText) findViewById(R.id.pass);
+        login = (Button) findViewById(R.id.login);
         board = (TextView) findViewById(R.id.board);
-        board2 = (TextView) findViewById(R.id.board2);
 
         sharedPreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
 
-        if(!sharedPreferences.getString(Name,null).isEmpty()){
-            name.setText(sharedPreferences.getString(Name,null));
+        if (sharedPreferences.getString("namekey", null) != null) {
+            nameid.setText(sharedPreferences.getString("namekey", null));
         }
-        if(!sharedPreferences.getString(Phone,null).isEmpty()){
-            pass.setText(sharedPreferences.getString(Phone,null));
+        if (sharedPreferences.getString("passkey", null) != null) {
+            passid.setText(sharedPreferences.getString("passkey", null));
         }
-        if(sharedPreferences.getBoolean("logged",false)){
-            Intent s= new Intent(this,Home_page.class);
+        if (sharedPreferences.getBoolean("logged", false)) {
+            Intent s = new Intent(this, Home_page.class);
             startActivity(s);
         }
         requestQueue = Volley.newRequestQueue(this);
 
-        button.setOnClickListener(this);
-        button2.setOnClickListener(this);
+        login.setOnClickListener(this);
+        nameid.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                u_entered = nameid.getText().toString();
+                p_entered = passid.getText().toString();
+                final SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putString("namekey", u_entered);
+                editor.putString("passkey", p_entered);
+                editor.commit();
+            }
+        });
+        passid.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                u_entered = nameid.getText().toString();
+                p_entered = passid.getText().toString();
+                final SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putString("namekey", u_entered);
+                editor.putString("passkey", p_entered);
+                editor.commit();
+            }
+        });
+
     }
 
 
@@ -81,25 +118,29 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.button:
-                String name1=name.getText().toString();
-                String paswd= pass.getText().toString();
+            case R.id.login:
 
                 final SharedPreferences.Editor editor=sharedPreferences.edit();
-                editor.putString(Name, name1);
-                editor.putString(Phone, paswd);
-                Toast.makeText(MainActivity.this, "asasa", Toast.LENGTH_LONG);
-
-                url="http://192.168.23.1:8000/default/login.json?userid="+name1+"&password="+paswd;
+                url="http://192.168.23.1:8000/default/login.json?userid="+u_entered+"&password="+p_entered;
                 StringRequest stringRequest=new StringRequest(Request.Method.GET, url, new Response.Listener<String>() {
                     @Override
                     public void onResponse(String s) {
                         try {
                             JSONObject jsonObject= new JSONObject(s);
+                            JSONObject info = jsonObject.getJSONObject("user");
+                            String first  = info.getString("first_name");
+                            String last = info.getString("last_name");
+                            String entry_no = info.getString("entry_no");
+                            String email = info.getString("email");
+
                             if(jsonObject.getBoolean("success")){
-                                editor.putBoolean("logged",true);
+                                editor.putBoolean("logged", true);
                                 editor.commit();
-                                Intent intent=new Intent(instance,Home_page.class);
+                                Intent intent=new Intent(instance,Overview.class);
+                                intent.putExtra("first",first);
+                                intent.putExtra("username", first+" "+last);
+                                intent.putExtra("entry_no", entry_no);
+                                intent.putExtra("email", email);
                                 startActivity(intent);
                             }
                             editor.commit();
@@ -110,36 +151,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }, new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError volleyError) {
-                        board.setText("sasasasas");
+                        board.setText("Check-URL");
                     }
                 }, this);
                 requestQueue.add(stringRequest);
                 //Intent intent=new Intent(this,Home_page.class);
                 //startActivity(intent);
-                break;
-
-            case R.id.button2:
-                board2.setText("" + sharedPreferences.getString(Name, null));
-
-                JsonObjectRequest JsonObjectRequest  = new JsonObjectRequest(Request.Method.GET,"http://192.168.24.1:8000/courses/list.json", null,
-                        new Response.Listener<JSONObject>() {
-                            @Override
-                            public void onResponse(JSONObject response) {
-                                try {
-                                    int y = response.getInt("current_sem");
-                                    board2.setText(""+y);
-                                }catch(JSONException e){e.printStackTrace();}
-                            }
-                        },
-                        new Response.ErrorListener() {
-                            @Override
-                            public void onErrorResponse(VolleyError error) {
-                                Log.e("Volley","Error");
-
-                            }
-                        }
-                );
-                requestQueue.add(JsonObjectRequest);
                 break;
         }
     }

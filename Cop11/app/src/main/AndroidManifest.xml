@@ -18,7 +18,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".Home_page"></activity>
+        <activity android:name=".Home_page" />
+        <activity android:name=".Overview"></activity>
     </application>
 
 </manifest>

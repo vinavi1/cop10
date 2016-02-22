@@ -11,9 +11,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Created by DO NOT USE THIS! on 2/18/2016.
- */
 public class StringRequest extends com.android.volley.toolbox.StringRequest  {
 
 
